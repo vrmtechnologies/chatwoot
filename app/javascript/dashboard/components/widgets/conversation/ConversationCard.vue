@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { useAlert } from 'dashboard/composables';
 import { useRouter } from 'vue-router';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { getLastMessage } from 'dashboard/helper/conversationHelper';
@@ -14,6 +15,10 @@ import CardLabels from './conversationCardComponents/CardLabels.vue';
 import PriorityMark from './PriorityMark.vue';
 import SLACardLabel from './components/SLACardLabel.vue';
 import ContextMenu from 'dashboard/components/ui/ContextMenu.vue';
+import { toRaw } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   activeLabel: { type: String, default: '' },
@@ -198,6 +203,57 @@ const closeContextMenu = () => {
 
 const onUpdateConversation = (status, snoozedUntil) => {
   closeContextMenu();
+
+  const rawChat = toRaw(props.chat);
+  console.log('props.chat', rawChat); 
+  if (rawChat.inbox_id === 3) {
+
+    const requiredFields = [
+      {
+        name: 'Solicitud',
+        field: 'solicitud'
+      },
+      {
+        name: 'Se soluciona en primera instancia?',
+        field: 'se_soluciona_en_primera_instancia'
+      },
+      {
+        name: 'Puedo ayudarte en algo adicional?',
+        field: 'puedo_ayudarte_en_algo_adicional'
+      },
+      {
+        name: 'Tipificación',
+        field: 'tipificacin'
+      }
+    ];
+
+    const customAttributes = rawChat.custom_attributes || {};
+
+    // buscar los que faltan o están vacíos
+    const missingFields = requiredFields.filter(
+      f => !customAttributes[f.field] || String(customAttributes[f.field]).trim() === ''
+    );
+
+    if (missingFields.length > 0) {
+      const missingNames = missingFields.map(f => f.name).join(', ');
+      useAlert(
+        t(`No puedes resolver la conversación sin diligenciar los siguientes campos: ${missingNames}`)
+      );
+      return;
+    }
+
+    const ayudaAdicional = rawChat.custom_attributes?.puedo_ayudarte_en_algo_adicional;
+    const solicitudAdicional = rawChat.custom_attributes?.solicitud_adicional;
+
+    if (ayudaAdicional === 'Si' && !solicitudAdicional) {
+      useAlert(
+        t(`No puedes resolver la conversación sin diligenciar el campo Solicitud adicional`)
+      );
+      return;
+    }
+  } 
+
+
   emit('updateConversationStatus', props.chat.id, status, snoozedUntil);
 };
 

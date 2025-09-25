@@ -16,6 +16,7 @@ WORKDIR /app
 
 # Copiar tu archivo modificado sobre el existente en la imagen
 COPY ./app/javascript/dashboard/components/buttons/ResolveAction.vue ./app/javascript/dashboard/components/buttons/ResolveAction.vue
+COPY ./app/javascript/dashboard/components/widgets/conversation/ConversationCard.vue ./app/javascript/dashboard/components/widgets/conversation/ConversationCard.vue
 
 # Variables de entorno necesarias para Rails
 ENV RAILS_ENV=production \
@@ -23,6 +24,7 @@ ENV RAILS_ENV=production \
     SECRET_KEY_BASE=dummykeyfordockerbuild
 
 # Recompilar assets para que se apliquen los cambios en el frontend
+# RUN bundle exec rails assets:clobber
 RUN bundle exec rails assets:precompile
 
 # Copiar script de arranque (asegúrate de tenerlo en tu repo/proyecto)

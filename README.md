@@ -6,15 +6,16 @@ ___
 # Chatwoot
 
 # para ejecutar en pruebas
-
-renombar archivo .env.test a .env 
-
 bundle exec rails assets:clobber
 bundle exec rails assets:precompile
 
 bundle exec rails s
 
 # para compilar imagen para publicar
+
+# RECORDAR
+En el dockerfile van los archivos que he cambiado, se pasan a la imagen original para hacer el cambio
+
 login ghcr
 echo xxxxxxx | docker login ghcr.io -u vrmtechnologies --password-stdin
 
