@@ -16,6 +16,7 @@ import {
 } from 'dashboard/helper/commandbar/events';
 
 import Button from 'dashboard/components-next/button/Button.vue';
+import { toRaw } from 'vue';
 
 const store = useStore();
 const getters = useStoreGetters();
@@ -96,6 +97,56 @@ const onCmdOpenConversation = () => {
 };
 
 const onCmdResolveConversation = () => {
+  const rawChat = toRaw(currentChat.value);
+  console.log('rawchat', rawChat); 
+  if (rawChat.inbox_id === 3) {
+
+    const requiredFields = [
+      {
+        name: 'Solicitud',
+        field: 'solicitud'
+      },
+      {
+        name: 'Se soluciona en primera instancia?',
+        field: 'se_soluciona_en_primera_instancia'
+      },
+      {
+        name: 'Puedo ayudarte en algo adicional?',
+        field: 'puedo_ayudarte_en_algo_adicional'
+      },
+      {
+        name: 'Tipificación',
+        field: 'tipificacin'
+      }
+    ];
+
+    const customAttributes = currentChat.value.custom_attributes || {};
+
+    // buscar los que faltan o están vacíos
+    const missingFields = requiredFields.filter(
+      f => !customAttributes[f.field] || String(customAttributes[f.field]).trim() === ''
+    );
+
+    if (missingFields.length > 0) {
+      const missingNames = missingFields.map(f => f.name).join(', ');
+      useAlert(
+        t(`No puedes resolver la conversación sin diligenciar los siguientes campos: ${missingNames}`)
+      );
+      return;
+    }
+
+    const ayudaAdicional = currentChat.value.custom_attributes?.puedo_ayudarte_en_algo_adicional;
+    const solicitudAdicional = currentChat.value.custom_attributes?.solicitud_adicional;
+
+    if (ayudaAdicional === 'Si' && !solicitudAdicional) {
+      useAlert(
+        t(`No puedes resolver la conversación sin diligenciar el campo Solicitud adicional`)
+      );
+      return;
+    }
+  } 
+
+  
   toggleStatus(wootConstants.STATUS_TYPE.RESOLVED);
 };
 

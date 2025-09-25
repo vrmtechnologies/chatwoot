@@ -7,57 +7,46 @@ services:
     volumes:
       - storage_data:/app/storage
 
-  rails:
+rails:
     <<: *base
-    depends_on:
-      - postgres
-      - redis
+    depends_on: []
     ports:
       - '127.0.0.1:3000:3000'
     environment:
       - NODE_ENV=production
       - RAILS_ENV=production
       - INSTALLATION_ENV=docker
+      # PostgreSQL externo
+      - POSTGRES_HOST=ballast.proxy.rlwy.net
+      - POSTGRES_PORT=32157
+      - POSTGRES_DATABASE=railway
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=IEvvWtAddhBRIUeRtPIErTmaElgFuxnO
+      # Redis externo
+      - REDIS_URL=redis://:wOhQHN0Kn2cr8t_Bt91Z7q3CW-K_iqrt@switchback.proxy.rlwy.net:54303/0
+      - SECRET_KEY_BASE=a655632d5ea9484259dd97d3afc5bf41e80f81b3ec20c87e8106587b3758fa63a21ab2e77ebd420dc2ce187cdc9beecce7c50521be0ff7f323190d1b80053881
     entrypoint: docker/entrypoints/rails.sh
     command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
     restart: always
 
   sidekiq:
     <<: *base
-    depends_on:
-      - postgres
-      - redis
+    depends_on: []
     environment:
       - NODE_ENV=production
       - RAILS_ENV=production
       - INSTALLATION_ENV=docker
+      # PostgreSQL externo
+      - POSTGRES_HOST=ballast.proxy.rlwy.net
+      - POSTGRES_PORT=32157
+      - POSTGRES_DATABASE=railway
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=IEvvWtAddhBRIUeRtPIErTmaElgFuxnO
+      # Redis externo
+      - REDIS_URL=redis://:wOhQHN0Kn2cr8t_Bt91Z7q3CW-K_iqrt@switchback.proxy.rlwy.net:54303/0
+      - SECRET_KEY_BASE=a655632d5ea9484259dd97d3afc5bf41e80f81b3ec20c87e8106587b3758fa63a21ab2e77ebd420dc2ce187cdc9beecce7c50521be0ff7f323190d1b80053881
     command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
     restart: always
 
-  postgres:
-    image: pgvector/pgvector:pg16
-    restart: always
-    ports:
-      - '127.0.0.1:5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=chatwoot
-      - POSTGRES_USER=postgres
-      # Please provide your own password.
-      - POSTGRES_PASSWORD=
-
-  redis:
-    image: redis:alpine
-    restart: always
-    command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
-    env_file: .env
-    volumes:
-      - redis_data:/data
-    ports:
-      - '127.0.0.1:6379:6379'
-
 volumes:
   storage_data:
-  postgres_data:
-  redis_data:

@@ -5,6 +5,22 @@ ___
 
 # Chatwoot
 
+# para ejecutar en pruebas
+
+renombar archivo .env.test a .env 
+
+bundle exec rails assets:clobber
+bundle exec rails assets:precompile
+
+bundle exec rails s
+
+# para compilar imagen para publicar
+login ghcr
+echo xxxxxxx | docker login ghcr.io -u vrmtechnologies --password-stdin
+
+docker build -t ghcr.io/vrmtechnologies/chatwoot:4 .
+docker push ghcr.io/vrmtechnologies/chatwoot:4
+
 The modern customer support platform, an open-source alternative to Intercom, Zendesk, Salesforce Service Cloud etc.
 
 <p>
